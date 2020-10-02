@@ -1,0 +1,94 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-plus-upstream
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx-plus-upstream
+  template:
+    metadata:
+      labels: 
+        app: nginx-plus-upstream
+      annotations:
+        # https://stackoverflow.com/questions/56954670/configmap-change-doesnt-reflect-automatically-on-respective-pods
+        # configmap.reloader.stakater.com/reload: "nginx-plus-upstream-conf-d"
+    spec:
+#      hostNetwork: true
+#      hostPID: true
+      containers:
+        - name: nginx-plus-upstream
+          image: localhost:5000/nginx-plus:22-r1
+          imagePullPolicy: Always
+          # ports:
+          # - containerPort: 9096
+          #   name: ssl
+          #   protocol: TCP
+          volumeMounts:
+          - name: nginx-plus-upstream-conf-d
+            mountPath: /etc/nginx/conf.d
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      volumes:
+      - name: nginx-plus-upstream-conf-d
+        configMap:
+          name: nginx-plus-upstream-conf-d
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-plus-upstream
+  labels:
+    name: nginx-plus-upstream
+spec:
+  clusterIP: None
+  # ports:
+  #   # HTTPS
+  # - name: "9096"
+  #   port: 9096
+  #   targetPort: 9096
+  #   protocol: TCP
+  # - name: "9097"
+  #   port: 9097
+  #   targetPort: 9097
+  #   protocol: TCP
+  # - name: "9098"
+  #   port: 9098
+  #   targetPort: 9098
+  #   protocol: TCP
+  # - name: "9099"
+  #   port: 9099
+  #   targetPort: 9099
+  #   protocol: TCP
+  #   # HTTP
+  # - name: "8096"
+  #   port: 8096
+  #   targetPort: 8096
+  #   protocol: TCP
+  # - name: "8097"
+  #   port: 8097
+  #   targetPort: 8097
+  #   protocol: TCP
+  # - name: "8098"
+  #   port: 8098
+  #   targetPort: 8098
+  #   protocol: TCP
+#   - name: "8099"
+#     port: 8099
+#     targetPort: 8099
+#     protocol: TCP
+  selector:
+    app: nginx-plus-upstream
+
+
+

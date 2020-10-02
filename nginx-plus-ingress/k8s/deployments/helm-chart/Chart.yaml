@@ -1,0 +1,15 @@
+name: nginx-ingress
+version: 0.5.2
+appVersion: 1.7.2
+apiVersion: v1
+description: NGINX Ingress Controller
+icon: https://raw.githubusercontent.com/nginxinc/kubernetes-ingress/v1.7.2/deployments/helm-chart/chart-icon.png
+sources:
+  - https://github.com/nginxinc/kubernetes-ingress/tree/v1.7.2/deployments/helm-chart
+keywords:
+  - ingress
+  - nginx
+maintainers:
+  - name: NGINX Kubernetes Team
+    email: kubernetes@nginx.com
+

@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: alertmanager-ingress
+  namespace: monitoring
+spec:
+  rules:
+  - host: alertmanager.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: prometheus-operator-alertmanager
+          servicePort: 9093

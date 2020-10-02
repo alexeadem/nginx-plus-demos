@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: "plus"
+spec:
+  rules:
+  - host: grafana.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: prometheus-operator-grafana
+          servicePort: 80

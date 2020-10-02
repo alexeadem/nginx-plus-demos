@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-ingress-prometheus-service
+  namespace: nginx-ingress
+  labels:
+    app: nginx-ingress
+spec:
+  selector:
+    app: nginx-ingress
+  ports:
+  - name: metrics
+    port: 9113

@@ -1,0 +1,87 @@
+apiVersion: v1
+data:
+  dummy_servers_html.conf: |
+    ##
+    # Plain Webservers | HTTP | port 9096, 9097, 9098, 9099
+    # Dummy loopback web servers reponds with text/html with $request_uri (the rewritten URL)
+    # sub_filter is used to replace placeholder values
+    # To add more variables see https://nginx.org/en/docs/varindex.html
+    ##
+    server {
+        listen 9096;
+        listen 9097;
+        listen 9098;
+        listen 9099;
+        server_name ssl.nginx.local;
+
+        root /usr/share/nginx/html;
+        #error_log /var/log/nginx/app-server-error.log notice;
+        error_log /dev/stdout notice;
+        index demo-index.htmlindex.html ;
+        try_files demo-index.html /demo-index.html 404;
+        default_type text/html;
+
+        expires -1;
+
+        sub_filter_once off;
+        sub_filter 'server_hostname' '$hostname';
+        sub_filter 'server_address'  '$server_addr';
+        sub_filter 'server_port'     '$server_port';
+        sub_filter 'server_url'      '$request_uri';
+        sub_filter 'remote_addr'     '$remote_addr:$remote_port';
+        sub_filter 'server_date'     '$time_local';
+        sub_filter 'client_browser'  '$http_user_agent';
+        sub_filter 'http_cookies'    '$http_cookie';
+        sub_filter 'request_id'      '$request_id';
+        sub_filter 'nginx_version'   '$nginx_version';
+        sub_filter 'document_root'   '$document_root';
+        sub_filter 'proxied_for_ip'  '$http_x_forwarded_for';
+
+        location /health {
+            # Return webpage
+            return 200 'healthy';
+        }
+
+    }
+  dummy_servers_text.conf: |
+    ##
+    # Plain Webservers | HTTP | port 8096, 8097, 8098, 8099
+    # Dummy loopback web servers reponds with plain/text with $request_uri (the rewritten URL)
+    # To add more variables see https://nginx.org/en/docs/varindex.html
+    ##
+    server {
+      listen 8095;
+      listen 8096;
+      listen 8097;
+      listen 8098;
+      listen 8099;
+      server_name www.nginx.local;
+
+            default_type text/plain;
+
+            # Add custom headers
+            add_header X-Whom "WEB-$server_port"; # WEB-$proxy_port
+
+
+            # Don't cache me
+            expires -1;
+
+            # Return webpage
+            location / {
+              return 200 'Status code: $status\nServer address: $server_addr:$server_port\nServer name: $hostname\nDate: $time_local\nUser-Agent: $http_user_agent\nCookie: $http_cookie\nURI: $request_uri\nRequest ID: $request_id\n';
+            }
+
+            # Health check page
+            location /health { 
+              return 200 'healthy';
+            }
+
+            # location /health { 
+            #   return 405 'error';
+            # }
+    }
+kind: ConfigMap
+metadata:
+  name: nginx-plus-upstream-conf-d
+  namespace: default
+  selfLink: /api/v1/namespaces/default/configmaps/conf-d

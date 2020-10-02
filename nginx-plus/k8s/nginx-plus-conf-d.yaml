@@ -1,0 +1,323 @@
+apiVersion: v1
+data:
+  health_checks.conf: |
+    match status_text_ok {
+        # Simple health check expecting http 200 and text/plain
+        status 200;
+        header Content-Type = text/plain;
+        body ~ "healthy"; # Regex body check
+    }
+
+    match status_html_ok {
+        # Simple health check expecting http 200 and text/html
+        status 200;
+        header Content-Type = text/html;
+        body ~ "healthy"; # Regex body check
+    }
+  status_api.conf: |
+    # This sample NGINX Plus configuration enables the NGINX Plus API, for live
+    # activity monitoring and the built-in dashboard, dynamic configuration of
+    # upstream groups, and key-value stores. Keep in mind that any features
+    # added to the API in future NGINX Plus releases will be enabled
+    # automatically by this file.
+    # Created in May 2018 by NGINX, Inc. for NGINX Plus R14 and later.
+
+    # Documentation:
+    # https://docs.nginx.com/nginx/admin-guide/monitoring/live-activity-monitoring/
+    # https://www.nginx.com/blog/live-activity-monitoring-nginx-plus-3-simple-steps
+
+    # To conform with the conventional configuration scheme, place this file in
+    # the /etc/nginx/conf.d directory and add an 'include' directive that
+    # references it in the main configuration file, /etc/nginx/nginx.conf,
+    # either by name or with a wildcard expression. Then validate and reload
+    # the configuration, for example with this command:
+    #
+    #     nginx -t && nginx -s reload
+
+    # Note that additional directives are required in other parts of the
+    # configuration:
+    #
+    # For metrics to be gathered for an HTTP or TCP/UDP virtual server, you must
+    # include the 'status_zone' directive in its 'server' block. See:
+    # http://nginx.org/r/status_zone
+    #
+    # Similarly, for metrics to be gathered for an upstream server group, you
+    # must include the 'zone' directive in the 'upstream' block. See:
+    # http://nginx.org/r/zone
+    #
+    # For more information and instructions, see:
+    # https://docs.nginx.com/nginx/admin-guide/monitoring/live-activity-monitoring#status_data
+
+    # We strongly recommend that you restrict access to the NGINX Plus API so
+    # that only authorized users can view metrics and configuration, change
+    # configuration, or both. Here are a few options:
+    #
+    # (1) Configure your firewall to limit access to port 8080.
+    #
+    # (2) Use SSL/TLS client certificates. See:
+    #    https://docs.nginx.com/nginx/admin-guide/security-controls/terminating-ssl-http/
+    #
+    # (3) Enable HTTP Basic authentication (RFC 7617) by uncommenting the
+    #    'auth_basic*' directives in the 'server' block below. You can add users
+    #    with an htpasswd generator, which is readily available, or reuse an
+    #    existing htpasswd file (from an Apache HTTP Server, for example).  See:
+    #    http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
+    #
+    # (4) Enable access from a defined network and disable it from all others,
+    #    by uncommenting the 'allow' and 'deny' directives in the 'server' block
+    #    below and specifying the appropriate network ranges. See:
+    #    http://nginx.org/en/docs/http/ngx_http_access_module.html
+    #
+    # You can create further restrictions on write operations, to distinguish
+    # between users with read permission and those who can change configuration.
+    # Uncomment the sample 'limit_except' directive in the 'location api'
+    # block below. In addition to the HTTP Basic authentication shown, other
+    # authentication schemes are supported. See:
+    # http://nginx.org/r/limit_except
+
+    server {
+        # Conventional port for the NGINX Plus API is 8080
+        listen 80;
+        server_name api.nginx.local;
+
+        # No Access logging
+
+        access_log off;
+
+        # Uncomment to use HTTP Basic authentication; see (3) above
+        #auth_basic "NGINX Plus API";
+        #auth_basic_user_file /etc/nginx/users;
+
+        # Uncomment to use permissions based on IP address; see (4) above
+        #allow 10.0.0.0/8;
+        #deny all;
+
+        # Conventional location for accessing the NGINX Plus API
+        location /api/ {
+            # Enable in read-write mode
+            api write=on;
+            # Enable in read-only mode
+            # api;
+            # Uncomment to further restrict write permissions; see note above
+            #limit_except GET {
+                #auth_basic "NGINX Plus API";
+                #auth_basic_user_file /etc/nginx/admins;
+            #}
+        }
+
+        # Conventional location of the NGINX Plus dashboard
+        location = /dashboard.html {
+            root /usr/share/nginx/html;
+        }
+
+        # Redirect requests for "/" to "/dashboard.html"
+        location / {
+            return 301 /dashboard.html;
+        }
+
+        # Redirect requests for pre-R14 dashboard
+        location /status.html {
+            return 301 /dashboard.html;
+        }
+    }
+
+    # vim: syntax=nginx
+  stub_status.conf: |
+    # ngx_http_stub_status_module (Available in NGINX F/OSS)
+    # provides Basic Status information http://nginx.org/en/docs/http/ngx_http_stub_status_module.html
+
+    server {
+        listen 127.0.0.1:80;
+        server_name 127.0.0.1;
+        location /nginx_status {
+          stub_status on;
+          allow 127.0.0.1;
+          deny all;
+      }
+    }
+  upstreams.conf: |
+
+    # dummy_servers
+    upstream dummy_servers_text {
+
+        resolver 10.96.0.10;
+        resolver_timeout 10s;
+        # my-svc.my-namespace.svc.cluster-domain.example
+        # /etc/resolve.conf
+        # search default.svc.cluster.local svc.cluster.local cluster.local
+        # nginx-plus-upstream.default.svc.cluster.local
+        zone dummy_servers 64k;
+        server nginx-plus-upstream.default.svc.cluster.local:8096;
+        server nginx-plus-upstream.default.svc.cluster.local:8097;
+        server nginx-plus-upstream.default.svc.cluster.local:8098;
+        server nginx-plus-upstream.default.svc.cluster.local:8099;
+
+        # Load Balancing
+        # Round Robin - Default
+        # ip_hash;
+        # hash [key] [consistent];
+        # least_conn;
+        # least_time header last_byte [inflight];
+        # random [two [method]];
+
+        # Activates the cache for connections to upstream servers
+        keepalive 64;
+
+    }
+
+    upstream dummy_servers_html {
+
+        resolver 10.96.0.10;
+        resolver_timeout 10s;
+
+        zone dummy_servers 64k;
+        server nginx-plus-upstream.default.svc.cluster.local:9096;
+        server nginx-plus-upstream.default.svc.cluster.local:9097;
+        server nginx-plus-upstream.default.svc.cluster.local:9098;
+        server nginx-plus-upstream.default.svc.cluster.local:9099;
+        keepalive 64;
+
+    }
+    
+
+    ##################
+    # Load Balancing #
+    ##################
+
+    #
+    # - Round Robin (the default)
+    #   Distributes requests in order across the list of upstream servers.
+    #
+    # - Least Connections
+    #   Sends requests to the server with the lowest number of
+    #   active connections.
+    #   e.g.
+    #   least_conn;
+    #
+    # - Least Time
+    #   Exclusive to NGINX Plus. Sends requests to the server selected by a
+    #   formula that combines the fastest response time and fewest active
+    #   connections: `least_time header | last_byte [inflight];`
+    #   e.g.
+    #   least_time last_byte;
+    #
+    #  - Hash
+    #    Distributes requests based on a key you define, such as the client IP
+    #    address or the request URL. NGINX Plus can optionally apply a consistent
+    #    hash to minimize redistribution of loads if the set of upstream servers
+    #    changes: `hash key [consistent];`
+    #    e.g.
+    #    hash $request_uri consistent;
+    #
+    #  - IP Hash (HTTP only)
+    #    Distributes requests based on the first three octets of
+    #    the client IP address.
+    #    e.g.
+    #    ip_hash;
+    #
+    #  - Random with Two Choices
+    #    Picks two servers at random and sends the request to the one that is
+    #    selected by then applying the Least Connections algorithm (or for NGINX Plus
+    #    the Least Time algorithm, if so configured): `random [two [method]]`
+    #    e.g.
+    #    random two; # Round Robin
+    #    random two least_conn; # Least connections
+    #    random two least_time=last_byte; # Least time: use header or last_byte
+  www.nginx.local.conf: |
+    # www.nginx.local HTTP
+    server {
+        listen 80 default_server;
+        server_name www.nginx.local nginx.local "";
+        status_zone www.nginx.local_http;
+
+        # Separate logs
+        # access_log /var/log/nginx/www.nginx.local.log main_ext; # access logs
+        # error_log  /var/log/nginx/www.nginx.local_errors.log info; # error logs
+
+        location / {
+            #include includes/proxy_headers/proxy_headers.conf;
+            #include includes/proxy_headers/keepalive.conf;
+
+            health_check interval=5s fails=2 passes=2 uri=/health match=status_text_ok;
+
+            proxy_pass http://dummy_servers_text;
+        }
+
+        # # Active Healthcheck
+        #  location @health_check {
+        #         proxy_set_header Host www.nginx.local;
+        #         proxy_pass http://dummy_servers_text;
+
+        #         health_check interval=5s fails=2 passes=2 uri=/health match=status_text_ok;
+        #         # access_log  /var/log/nginx/health_check.log main;
+        #         # access_log  /dev/stdout main;
+        #         internal;  # Internal request only
+        # }
+
+    } 
+#   ssl.nginx.local.conf: |
+#     # ssl.nginx.local HTTP Redirect to HTTPS
+#     server {
+#         listen 80;
+#         server_name ssl.nginx.local test.local;
+#         return 301 https://$host:30443$request_uri;
+
+#         # redirect for anyone browsing a vhost via HTTP to the HTTPs version, called 497. 
+#         #error_page 497 https://$host:$server_port$request_uri;
+#         #error_page 497 https://$host:30443$request_uri;
+
+
+#     }
+#     # ssl.nginx.local HTTPS
+#     server {
+#         listen 443 ssl default_server;
+#         server_name ssl.nginx.local test.local;
+#         status_zone ssl.nginx.local_https;
+
+#         # Separate logs
+#         # access_log /var/log/nginx/ssl.nginx.local.log main_ext; # access logs
+#         # error_log  /var/log/nginx/ssl.nginx.local_errors.log info; # error logs
+
+#         #ssl_certificate /etc/ssl/nginx.local.crt;
+#         #ssl_certificate_key /etc/ssl/nginx.local.key;
+#         # See best practices for security and compatibility here:
+#         # https://mozilla.github.io/server-side-tls/ssl-config-generator/
+#         # Include SSL configurations (uncomment one line below)
+#         # include includes/ssl/ssl_old.conf; # Compatiblity for very old clients. Should be used only as a last resort
+#         # include includes/ssl/ssl_intermediate.conf; # General-purpose, recommended for almost all systems
+#         # include includes/ssl/ssl_modern.conf; # Modern clients: TLS 1.3 with no need backward compatibility
+#         # include includes/ssl/ssl_a+_strong.conf; # Based on SSL Labs A+ (https://www.ssllabs.com/ssltest/)
+
+#         location / {
+#             #include includes/proxy_headers/proxy_headers.conf;
+#             #proxy_set_header Host ssl.nginx.local;
+#             #proxy_set_header X-Real-IP $remote_addr;
+#             #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             #proxy_set_header X-Forwarded-Proto $scheme;
+
+#             health_check interval=3s fails=2 passes=2 uri=/health match=status_html_ok;
+
+            
+#             proxy_pass http://dummy_servers_html;
+#         }
+
+#         # # Active Healthcheck
+#         #  location @health_check {
+#                   #resolver 10.96.0.10 valid=5s;
+#                   #resolver 127.0.0.1 [::1]:53 valid=5s;
+#                   #resolver 127.0.0.1 valid=5s;
+#         #         proxy_set_header Host ssl.nginx.local;
+#         #         proxy_pass http://dummy_servers_html;
+
+#         #         health_check interval=3s fails=2 passes=2 uri=/health match=status_html_ok;
+#         #         #access_log  /var/log/nginx/health_check.log main;
+#         #         #access_log  /dev/stdout main;
+#         #         internal;  # Internal request only
+#         # }
+
+#     }
+kind: ConfigMap
+metadata:
+  name: nginx-plus-conf-d
+  namespace: default
+  selfLink: /api/v1/namespaces/default/configmaps/conf-d

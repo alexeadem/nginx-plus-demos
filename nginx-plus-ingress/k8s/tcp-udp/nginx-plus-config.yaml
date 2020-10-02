@@ -1,0 +1,42 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config
+  namespace: nginx-ingress
+data:
+    stream-snippets: |
+      resolver 10.96.0.10 valid=5s;
+
+      upstream coredns-udp {
+          zone coredns-udp 64k;
+          server kube-dns.kube-system.svc.cluster.local:53 resolve;
+      }
+
+      server {
+          listen 53 udp;
+          proxy_pass coredns-udp;
+          proxy_responses 1;
+          status_zone coredns-udp;
+      }
+
+      upstream coredns-tcp {
+          zone coredns-tcp 64k;
+          server kube-dns.kube-system.svc.cluster.local:53 resolve;
+      }
+
+      server {
+          listen 53;
+          proxy_pass coredns-tcp;
+          status_zone coredns-tcp;
+      }
+      
+      upstream registry-tcp {
+          zone registry-tcp 64k;
+          server registry.kube-system.svc.cluster.local:5000 resolve;
+      }
+
+      server {
+          listen 5000;
+          proxy_pass registry-tcp;
+          status_zone registry-tcp;
+      } 

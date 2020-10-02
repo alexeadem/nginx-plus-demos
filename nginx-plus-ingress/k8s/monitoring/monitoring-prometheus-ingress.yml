@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: "plus"
+spec:
+  rules:
+  - host: prometheus.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: prometheus-operator-prometheus
+          servicePort: 9090
