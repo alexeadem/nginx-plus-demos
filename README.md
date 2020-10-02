@@ -12,14 +12,14 @@
     - [Push](#push)
     - [Run in K8s](#run-in-k8s)
     - [Test](#test-1)
-    - [Get NodePort](#get-nodeport)
+      - [Get NodePort](#get-nodeport)
       - [Get worker IPs](#get-worker-ips)
       - [Connect to NodePort](#connect-to-nodeport)
   - [6. Nginx Plus Ingress Docker Image](#6-nginx-plus-ingress-docker-image)
     - [Clone code](#clone-code)
-    - [Checkout tag](#checkout-tag)
+    - [Checkout Specific Tag](#checkout-specific-tag)
     - [Licenses](#licenses)
-    - [Build & Tag & Push](#build--tag--push)
+    - [Build, Tag & Push](#build-tag--push)
     - [Run](#run)
     - [Test](#test-2)
       - [Get worker IP](#get-worker-ip)
@@ -28,9 +28,13 @@
       - [Troubleshooting](#troubleshooting)
   - [7. Multiple Ingresses](#7-multiple-ingresses)
     - [Deploy](#deploy)
+    - [Get OSS Nginx Ingress](#get-oss-nginx-ingress)
+    - [Get Nginx Plus Ingress](#get-nginx-plus-ingress)
     - [Classes](#classes)
     - [Annotations](#annotations)
+    - [Run ingress on specific ingress](#run-ingress-on-specific-ingress)
     - [Test](#test-3)
+    - [Trobleshooting](#trobleshooting)
   - [8. NJS](#8-njs)
     - [Use Case](#use-case)
     - [Deploy demo](#deploy-demo)
@@ -146,7 +150,7 @@ NAME                                   READY   STATUS    RESTARTS   AGE
 nginx-plus-c7958bcd6-85dr4             1/1     Running   3          101s
 nginx-plus-upstream-6778787f99-vwmrg   1/1     Running   0          101s
 ```
-### Get NodePort
+#### Get NodePort
 ```
 $ kubectl get svc
 NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
@@ -184,7 +188,7 @@ Request ID: 779da9d538851beb1d30bbf66db19704
 $ cd ..
 $ git clone https://github.com/nginxinc/kubernetes-ingress.git
 ```
-### Checkout tag
+### Checkout Specific Tag
 ```
 $ cd kubernetes-ingress
 $ git checkout tags/v1.7.2
@@ -194,7 +198,7 @@ $ git checkout tags/v1.7.2
 $ cp licenses/nginx-repo.crt licenses/nginx-repo.key ../kubernetes-ingress/
 $ cd ../kubernetes-ingress/
 ```
-### Build & Tag & Push
+### Build, Tag & Push
 ```
 make DOCKERFILE=DockerfileForPlus VERSION=v1.7.2 PREFIX=localhost:5000/nginx-plus-ingress
 ```
@@ -219,7 +223,7 @@ $ kubectl get pods -n nginx-ingress  -o wide
 NAME                             READY   STATUS    RESTARTS   AGE   IP                NODE                              NOMINATED NODE   READINESS GATES
 nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          52s   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>          
 ```
-> Note that the the ingress is running on worker node `worker-6e9bcb57.d5540.eadem.com`. 
+> Note that the the ingress is running in worker node `worker-6e9bcb57.d5540.eadem.com`. 
 
 #### Get worker IP
 
@@ -239,7 +243,7 @@ $ curl  172.17.0.3:5000/v2/_catalog
 
 ```
 
-> Relevant Config map `nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml`
+> Relevant ConfigMap `nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml`
 ```
 
       upstream coredns-udp {
@@ -267,7 +271,7 @@ Name:   registry.kube-system.svc.cluster.local
 Address: 172.16.69.112
 
 ```
-> Relevant Config map `nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml`
+> Relevant ConfigMap `nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml`
 
 ```
       upstream registry-tcp {
@@ -291,13 +295,159 @@ $ kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
 
 ## 7. Multiple Ingresses 
 
+In this demo you'll be running two ingresses. The OSS nginx ingress and the nginx plus ingress. The nginx OSS ingress will be running in the master and the nginx plus ingress will be running in one of the worker nodes. Both ingress will be using different namespaces.
+
 ### Deploy
 
+Deploy Nginx Plus Ingress. Follow step 6.
+
+```
+kubectl get pods -n nginx-ingress -o wide
+NAME                             READY   STATUS    RESTARTS   AGE    IP                NODE                              NOMINATED NODE   READINESS GATES
+nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          125m   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>           <none>
+```
+
+### Get OSS Nginx Ingress
+
+```
+$ kubectl get pods -lapp.kubernetes.io/component=controller -n ingress-nginx -o wide
+NAME                                        READY   STATUS    RESTARTS   AGE     IP               NODE                     NOMINATED NODE   READINESS GATES
+ingress-nginx-controller-679d8fd6f6-d2zwv   1/1     Running   0          3h13m   192.168.43.196   master.d5540.eadem.com   <none>           <none>
+```
+
+You can see that the OSS nginx ingress is running in the master node `master.d5540.eadem.com `
+
+```$ qbo get nodes
+c9a6532d01e6 worker-6e9bcb57.d5540.eadem.com          172.17.0.6         eadem/node:v1.18.1        running             
+0924454fe5f1 worker-03f50753.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
+60e28030e3de worker-353c5fdc.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
+e60d01ebc96f master.d5540.eadem.com                   172.17.0.3         eadem/node:v1.18.1        running
+```
+
+and ip  `172.17.0.3`
+
+> The following configuration is used in the deployment to run the ingress in the master node.
+
+```
+      nodeSelector:
+        ingress-ready: 'true'
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Equal
+```
+### Get Nginx Plus Ingress
+
+```
+$ kubectl get pods -n nginx-ingress -o wide
+NAME                             READY   STATUS    RESTARTS   AGE    IP                NODE                              NOMINATED NODE   READINESS GATES
+nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          137m   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>           <none>
+```
+
+And you can see that nginx plus ingress is running in worker node `worker-353c5fdc.d5540.eadem.com`
+
+and ip `172.17.0.4`
+
+
+
 ### Classes
+In order you using multiple ingress you need to define classes. In `nginx-plus-ingress/k8s/deployments/deployment/nginx-plus-ingress.yaml`, you can see the following
+
+```
+        args:
+          - -ingress-class=plus
+          - -use-ingress-class-only
+```
+
+The first argument `-ingress-class=plus` tells nginx plus ingress be assigned to the `plus` class. And the second one `- -use-ingress-class-only` tell nginx plus ingress to take only ingresses with `plus` configuration class.
+
+> For more info on classes: `https://docs.nginx.com/nginx-ingress-controller/installation/running-multiple-ingress-controllers/`
 
 ### Annotations
 
+In order the use the nginx plus ingress the following annotation will need to be added
+
+```
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "plus"
+```
+> See `nginx-plus-ingress/k8s/complete-example/cafe.yaml` for configuration
+> If no annotation is added the OSS nginx will pick up the ingress
+
+### Run ingress on specific ingress
+
+```
+$ kubectl apply -f nginx-plus-ingress/k8s/complete-example
+```
+
 ### Test
+
+Check that your test app is running
+
+```
+$ kubectl get pods
+NAME                                   READY   STATUS    RESTARTS   AGE
+coffee-5f56ff9788-qfn4m                1/1     Running   0          60s
+coffee-5f56ff9788-t9bkz                1/1     Running   0          60s
+nginx-plus-c7958bcd6-85dr4             1/1     Running   3          3h46m
+nginx-plus-upstream-6778787f99-vwmrg   1/1     Running   0          3h46m
+tea-69c99ff568-4jjz7                   1/1     Running   0          60s
+tea-69c99ff568-bn5j5                   1/1     Running   0          60s
+tea-69c99ff568-mt8k4                   1/1     Running   0          60s
+```
+
+```
+$ kubectl get pod -lapp=nginx-ingress -n nginx-ingress -o wide
+NAME                             READY   STATUS    RESTARTS   AGE    IP                NODE                              NOMINATED NODE   READINESS GATES
+nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          177m   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>           <none>
+```
+
+```
+$ qbo get nodes
+c9a6532d01e6 worker-6e9bcb57.d5540.eadem.com          172.17.0.6         eadem/node:v1.18.1        running             
+0924454fe5f1 worker-03f50753.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
+60e28030e3de worker-353c5fdc.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
+e60d01ebc96f master.d5540.eadem.com                   172.17.0.3         eadem/node:v1.18.1        running  
+```
+
+The ingress is running in worker node `worker-353c5fdc.d5540.eadem.com` with IP `172.17.0.4`
+
+And finally test the nginx plus ingress
+
+```
+$ curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.0.4
+Server address: 192.168.14.4:8080
+Server name: coffee-5f56ff9788-t9bkz
+Date: 02/Oct/2020:18:34:52 +0000
+URI: /coffee
+Request ID: 4867ceb1d1d153a3fbd4487ce5af1f4b
+```
+
+> Note that if you try the other ingress running in the master node the request will fail
+
+```
+$ curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.0.3
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/1.17.10</center>
+</body>
+</html>
+```
+
+### Trobleshooting
+
+Once you deply the ingress you should see that the cafe ingress has been added and picked up by the right nginx plus ingress
+
+```
+$ kubectl logs -f nginx-ingress-7f9d695cbd-8ctv5 -n nginx-ingress
+```
+
+```
+I1002 18:28:22.811121       1 event.go:278] Event(v1.ObjectReference{Kind:"Ingress", Namespace:"default", Name:"cafe-ingress", UID:"b6bd8d64-8255-492b-a930-108175b503ef", APIVersion:"extensions/v1beta1", ResourceVersion:"38662", FieldPath:""}): type: 'Normal' reason: 'AddedOrUpdated' Configuration for default/cafe-ingress was added or updated
+```
 
 ## 8. NJS
 
@@ -311,7 +461,7 @@ $ kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
 
 ## 9. Monitoring
 
-### Deploy Grafana & Prometheus
+### Deploy Grafana & Prometheus       
 
 ### Add a dashboard
 
