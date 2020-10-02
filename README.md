@@ -439,7 +439,7 @@ $ curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.
 
 ### Trobleshooting
 
-Once you deply the ingress you should see that the cafe ingress has been added and picked up by the right nginx plus ingress
+Once you deploy the ingress you should see that the cafe ingress has been picked up and added by the right nginx plus ingress
 
 ```
 $ kubectl logs -f nginx-ingress-7f9d695cbd-8ctv5 -n nginx-ingress
