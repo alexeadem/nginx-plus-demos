@@ -1,11 +1,12 @@
 - [NGINX PLUS in K8s - Demos](#nginx-plus-in-k8s---demos)
-  - [Licenses](#licenses)
-  - [Multinode Kubernetes cluster](#multinode-kubernetes-cluster)
-    - [Deploy cluster with QBO](#deploy-cluster-with-qbo)
-  - [Docker Registry](#docker-registry)
+  - [1. Clone repo](#1-clone-repo)
+  - [2. Licenses](#2-licenses)
+  - [3. Multinode Kubernetes cluster](#3-multinode-kubernetes-cluster)
+    - [Deploy QBO Cluster](#deploy-qbo-cluster)
+  - [4. Docker Registry](#4-docker-registry)
     - [Start](#start)
     - [Test](#test)
-  - [Nginx Plus Docker Image](#nginx-plus-docker-image)
+  - [5. Nginx Plus Docker Image](#5-nginx-plus-docker-image)
     - [Build](#build)
     - [Tag](#tag)
     - [Push](#push)
@@ -14,10 +15,10 @@
     - [Get NodePort](#get-nodeport)
       - [Get worker IPs](#get-worker-ips)
       - [Connect to NodePort](#connect-to-nodeport)
-  - [Nginx Plus Ingress Docker Image](#nginx-plus-ingress-docker-image)
+  - [6. Nginx Plus Ingress Docker Image](#6-nginx-plus-ingress-docker-image)
     - [Clone code](#clone-code)
     - [Checkout tag](#checkout-tag)
-    - [Licenses](#licenses-1)
+    - [Licenses](#licenses)
     - [Build & Tag & Push](#build--tag--push)
     - [Run](#run)
     - [Test](#test-2)
@@ -25,15 +26,15 @@
       - [Test TCP Ingress](#test-tcp-ingress)
       - [Test UDP Ingress](#test-udp-ingress)
       - [Troubleshooting](#troubleshooting)
-  - [Multiple Ingresses](#multiple-ingresses)
+  - [7. Multiple Ingresses](#7-multiple-ingresses)
     - [Deploy](#deploy)
     - [Classes](#classes)
     - [Annotations](#annotations)
     - [Test](#test-3)
-  - [NJS](#njs)
+  - [8. NJS](#8-njs)
     - [Use Case](#use-case)
     - [Deploy demo](#deploy-demo)
-  - [Monitorig](#monitorig)
+  - [9. Monitoring](#9-monitoring)
     - [Deploy Grafana & Prometheus](#deploy-grafana--prometheus)
     - [Add a dashboard](#add-a-dashboard)
     - [Test](#test-4)
@@ -42,9 +43,35 @@
 
 # NGINX PLUS in K8s - Demos
 
-## Licenses
+## 1. Clone repo
 
-## Multinode Kubernetes cluster
+```
+git clone https://github.com/alexeadem/nginx-plus-demos.git
+```
+
+## 2. Licenses
+
+```
+cd nginx-plus-demos/licenses
+```
+
+> Copy your licenses under `licenses` and run `./validate-licenses.sh`
+
+```
+$ ./validate-licenses.sh 
+Certificate will not expire
+in the next 15 days
+Certifcate expiration [ OK ]
+notBefore=Jul 30 12:20:00 2018 GMT
+notAfter=Jul 27 12:20:00 2028 GMT
+subject=C = RU, ST = Moscow, L = Moscow, O = NGINX Inc, OU = Client certificates, CN = A-S00072502
+Certificate pair match [ OK ]
+```
+
+
+## 3. Multinode Kubernetes cluster
+
+### Deploy QBO Cluster
 
 ```
 $ qbo add cluster -w3 -p5000 -d`hostname`
@@ -69,11 +96,10 @@ e60d01ebc96f master.d5540.eadem.com                   172.17.0.3         eadem/n
 ```
 
 
-> For more details on the installation go to: https://github.com/alexeadem/qbo-ctl
+> For more details on the QBO installation go to: https://github.com/alexeadem/qbo-ctl
 
-### Deploy cluster with QBO
 
-## Docker Registry
+## 4. Docker Registry
 
 ### Start
 ```
@@ -92,7 +118,7 @@ $ curl localhost:5000/v2/_catalog
 ```
 
 
-## Nginx Plus Docker Image
+## 5. Nginx Plus Docker Image
 
 ### Build
 ```
@@ -149,7 +175,7 @@ Request ID: 779da9d538851beb1d30bbf66db19704
 
 ```
 
-## Nginx Plus Ingress Docker Image
+## 6. Nginx Plus Ingress Docker Image
 
 
 ### Clone code
@@ -262,7 +288,7 @@ $ kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
 
 ```
 
-## Multiple Ingresses 
+## 7. Multiple Ingresses 
 
 ### Deploy
 
@@ -272,14 +298,14 @@ $ kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
 
 ### Test
 
-## NJS
+## 8. NJS
 
 ### Use Case 
 
 
 ### Deploy demo
 
-## Monitorig
+## 9. Monitoring
 
 ### Deploy Grafana & Prometheus
 
