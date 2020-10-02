@@ -34,10 +34,11 @@
   - [8. NJS](#8-njs)
     - [Use Case](#use-case)
     - [Deploy demo](#deploy-demo)
+    - [Test](#test-4)
   - [9. Monitoring](#9-monitoring)
     - [Deploy Grafana & Prometheus](#deploy-grafana--prometheus)
     - [Add a dashboard](#add-a-dashboard)
-    - [Test](#test-4)
+    - [Test](#test-5)
 
 
 
@@ -302,8 +303,11 @@ $ kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
 
 ### Use Case 
 
+![Infrastructure and communication diagram](njs-diag.png)
 
 ### Deploy demo
+
+### Test 
 
 ## 9. Monitoring
 
