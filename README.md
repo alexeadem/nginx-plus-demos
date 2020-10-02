@@ -11,6 +11,9 @@
     - [Push](#push)
     - [Run in K8s](#run-in-k8s)
     - [Test](#test-1)
+    - [Get NodePort](#get-nodeport)
+      - [Get worker IPs](#get-worker-ips)
+      - [Connect to NodePort](#connect-to-nodeport)
   - [Nginx Plus Ingress Docker Image](#nginx-plus-ingress-docker-image)
     - [Clone code](#clone-code)
     - [Checkout tag](#checkout-tag)
@@ -115,25 +118,25 @@ $ kubectl get pods
 NAME                                   READY   STATUS    RESTARTS   AGE
 nginx-plus-c7958bcd6-85dr4             1/1     Running   3          101s
 nginx-plus-upstream-6778787f99-vwmrg   1/1     Running   0          101s
-
+```
 ### Get NodePort
-
+```
 $ kubectl get svc
 NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
 kubernetes            ClusterIP   172.16.0.1       <none>        443/TCP                      12m
 nginx-plus            NodePort    172.16.143.152   <none>        80:30080/TCP,443:30443/TCP   2m10s
 nginx-plus-upstream   ClusterIP   None             <none>        <none>                       2m10s
-
+```
 #### Get worker IPs
-
+```
 $ qbo get nodes
 c9a6532d01e6 worker-6e9bcb57.d5540.eadem.com          172.17.0.6         eadem/node:v1.18.1        running             
 0924454fe5f1 worker-03f50753.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
 60e28030e3de worker-353c5fdc.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
 e60d01ebc96f master.d5540.eadem.com                   172.17.0.3         eadem/node:v1.18.1        running  
-
+```
 #### Connect to NodePort 
-
+```
 $ curl 172.17.0.4:30080
 Status code: 200
 Server address: 192.168.6.193:8096
