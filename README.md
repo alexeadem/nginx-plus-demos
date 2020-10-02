@@ -1,4 +1,4 @@
-- [NGINX PLUS in K8s Demos](#nginx-plus-in-k8s-demos)
+- [NGINX PLUS in K8s - Demos](#nginx-plus-in-k8s---demos)
   - [Licenses](#licenses)
   - [Multinode Kubernetes cluster](#multinode-kubernetes-cluster)
     - [Deploy cluster with QBO](#deploy-cluster-with-qbo)
@@ -40,7 +40,7 @@
 
 
 
-# NGINX PLUS in K8s Demos
+# NGINX PLUS in K8s - Demos
 
 ## Licenses
 
