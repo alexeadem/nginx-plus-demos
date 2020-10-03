@@ -244,20 +244,18 @@ $ curl  172.17.0.3:5000/v2/_catalog
 ```
 
 > Relevant ConfigMap `nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml`
-```
 
-      upstream coredns-udp {
-          zone coredns-udp 64k;
-          server kube-dns.kube-system.svc.cluster.local:53 resolve;
+```
+      upstream registry-tcp {
+          zone registry-tcp 64k;
+          server registry.kube-system.svc.cluster.local:5000 resolve;
       }
 
       server {
-          listen 53 udp;
-          proxy_pass coredns-udp;
-          proxy_responses 1;
-          status_zone coredns-udp;
-      }
-
+          listen 5000;
+          proxy_pass registry-tcp;
+          status_zone registry-tcp;
+      } 
 ```
 
 #### Test UDP Ingress
@@ -273,17 +271,20 @@ Address: 172.16.69.112
 ```
 > Relevant ConfigMap `nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml`
 
+
 ```
-      upstream registry-tcp {
-          zone registry-tcp 64k;
-          server registry.kube-system.svc.cluster.local:5000 resolve;
+      upstream coredns-udp {
+          zone coredns-udp 64k;
+          server kube-dns.kube-system.svc.cluster.local:53 resolve;
       }
 
       server {
-          listen 5000;
-          proxy_pass registry-tcp;
-          status_zone registry-tcp;
-      } 
+          listen 53 udp;
+          proxy_pass coredns-udp;
+          proxy_responses 1;
+          status_zone coredns-udp;
+      }
+
 ```
 
 #### Troubleshooting
@@ -359,7 +360,7 @@ In order you using multiple ingress you need to define classes. In `nginx-plus-i
           - -use-ingress-class-only
 ```
 
-The first argument `-ingress-class=plus` tells nginx plus ingress be assigned to the `plus` class. And the second one `- -use-ingress-class-only` tell nginx plus ingress to take only ingresses with `plus` configuration class.
+The first argument `-ingress-class=plus` tells nginx plus ingress be assigned to the `plus` class. And the second one `-use-ingress-class-only` tell nginx plus ingress to take only ingresses with `plus` configuration class.
 
 > For more info on classes: `https://docs.nginx.com/nginx-ingress-controller/installation/running-multiple-ingress-controllers/`
 
