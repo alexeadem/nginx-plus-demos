@@ -40,10 +40,6 @@
     - [Configuration](#configuration)
     - [Deploy demo](#deploy-demo)
     - [Test](#test-4)
-  - [9. Monitoring](#9-monitoring)
-    - [Deploy Grafana & Prometheus](#deploy-grafana--prometheus)
-    - [Add a dashboard](#add-a-dashboard)
-    - [Test](#test-5)
 
 
 
@@ -555,10 +551,3 @@ $ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestam
             }
 ```
 
-## 9. Monitoring
-
-### Deploy Grafana & Prometheus       
-
-### Add a dashboard
-
-### Test
