@@ -458,8 +458,8 @@ I1002 18:28:22.811121       1 event.go:278] Event(v1.ObjectReference{Kind:"Ingre
 ![Infrastructure and communication diagram](njs-diag.png)
 
 
-This demo simulates communication between cars (clients) sending their VINs nunmbers to the Nginx Plus for routing to a specific backend: Either DEV or PROD. Nginx will receive the car request and pass it to a VIN Router which will set 
-the specific environemnt based on the VIN number in the `body` response back to Nginx Plus. Using NJS Nginx will parse the environmnet variable and and proxy the car request to etiher PROD or DEV.
+This demo simulates communication between cars (clients) sending their VINs numbers to the Nginx Plus for routing to a specific backend: Either DEV or PROD. Nginx will receive the car request and pass it to a VIN Router which will set
+the specific environment based on the VIN number in the `body` response back to Nginx Plus. Using NJS Nginx Plus will parse the environment variable and proxy the car request to either PROD or DEV.
 
 ### Configuration
 
@@ -537,8 +537,8 @@ Relevant config `njs/nginx-plus-conf-d.yaml`
 ### Test 
 
 Test Prod
-```
 > Adding a number in fron of the VIN will router to PROD
+```
 $ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=ADF4477' --resolve nginx.local:80:172.17.0.3
 {
             "environment": "production"
