@@ -1,0 +1,310 @@
+apiVersion: v1
+data:
+  health_checks.conf: |
+    match status_json_ok {
+        # Simple health check expecting http 200 and application/json
+        status 200;
+        # header Content-Type = application/json;
+        # body ~ "healthy"; # Regex body check
+    }
+
+  status_api.conf: |
+    # This sample NGINX Plus configuration enables the NGINX Plus API, for live
+    # activity monitoring and the built-in dashboard, dynamic configuration of
+    # upstream groups, and key-value stores. Keep in mind that any features
+    # added to the API in future NGINX Plus releases will be enabled
+    # automatically by this file.
+    # Created in May 2018 by NGINX, Inc. for NGINX Plus R14 and later.
+
+    # Documentation:
+    # https://docs.nginx.com/nginx/admin-guide/monitoring/live-activity-monitoring/
+    # https://www.nginx.com/blog/live-activity-monitoring-nginx-plus-3-simple-steps
+
+    # To conform with the conventional configuration scheme, place this file in
+    # the /etc/nginx/conf.d directory and add an 'include' directive that
+    # references it in the main configuration file, /etc/nginx/nginx.conf,
+    # either by name or with a wildcard expression. Then validate and reload
+    # the configuration, for example with this command:
+    #
+    #     nginx -t && nginx -s reload
+
+    # Note that additional directives are required in other parts of the
+    # configuration:
+    #
+    # For metrics to be gathered for an HTTP or TCP/UDP virtual server, you must
+    # include the 'status_zone' directive in its 'server' block. See:
+    # http://nginx.org/r/status_zone
+    #
+    # Similarly, for metrics to be gathered for an upstream server group, you
+    # must include the 'zone' directive in the 'upstream' block. See:
+    # http://nginx.org/r/zone
+    #
+    # For more information and instructions, see:
+    # https://docs.nginx.com/nginx/admin-guide/monitoring/live-activity-monitoring#status_data
+
+    # We strongly recommend that you restrict access to the NGINX Plus API so
+    # that only authorized users can view metrics and configuration, change
+    # configuration, or both. Here are a few options:
+    #
+    # (1) Configure your firewall to limit access to port 8080.
+    #
+    # (2) Use SSL/TLS client certificates. See:
+    #    https://docs.nginx.com/nginx/admin-guide/security-controls/terminating-ssl-http/
+    #
+    # (3) Enable HTTP Basic authentication (RFC 7617) by uncommenting the
+    #    'auth_basic*' directives in the 'server' block below. You can add users
+    #    with an htpasswd generator, which is readily available, or reuse an
+    #    existing htpasswd file (from an Apache HTTP Server, for example).  See:
+    #    http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
+    #
+    # (4) Enable access from a defined network and disable it from all others,
+    #    by uncommenting the 'allow' and 'deny' directives in the 'server' block
+    #    below and specifying the appropriate network ranges. See:
+    #    http://nginx.org/en/docs/http/ngx_http_access_module.html
+    #
+    # You can create further restrictions on write operations, to distinguish
+    # between users with read permission and those who can change configuration.
+    # Uncomment the sample 'limit_except' directive in the 'location api'
+    # block below. In addition to the HTTP Basic authentication shown, other
+    # authentication schemes are supported. See:
+    # http://nginx.org/r/limit_except
+
+    server {
+        # Conventional port for the NGINX Plus API is 8080
+        listen 8080;
+        server_name api.nginx.local;
+
+        # No Access logging
+        access_log off;
+
+        # Uncomment to use HTTP Basic authentication; see (3) above
+        #auth_basic "NGINX Plus API";
+        #auth_basic_user_file /etc/nginx/users;
+
+        # Uncomment to use permissions based on IP address; see (4) above
+        #allow 10.0.0.0/8;
+        #deny all;
+
+        # Conventional location for accessing the NGINX Plus API
+        location /api/ {
+            # Enable in read-write mode
+            api write=on;
+            # Enable in read-only mode
+            # api;
+            # Uncomment to further restrict write permissions; see note above
+            #limit_except GET {
+                #auth_basic "NGINX Plus API";
+                #auth_basic_user_file /etc/nginx/admins;
+            #}
+        }
+
+        # Conventional location of the NGINX Plus dashboard
+        location = /dashboard.html {
+            root /usr/share/nginx/html;
+        }
+
+        # Redirect requests for "/" to "/dashboard.html"
+        location / {
+            return 301 /dashboard.html;
+        }
+
+        # Redirect requests for pre-R14 dashboard
+        location /status.html {
+            return 301 /dashboard.html;
+        }
+    }
+
+  upstreams.conf: |
+
+    # dummy_servers
+    upstream vinrouter {
+        zone vinrouter 64k;
+        server vinrouter.default.svc.cluster.local:8096;
+
+        # Load Balancing
+        # Round Robin - Default
+        # ip_hash;
+        # hash [key] [consistent];
+        # least_conn;
+        # least_time header last_byte [inflight];
+        # random [two [method]];
+
+        # Activates the cache for connections to upstream servers
+        keepalive 64;
+
+    }
+
+    upstream production {
+        server production.default.svc.cluster.local:8096;
+    }
+    upstream dev {
+        server dev.default.svc.cluster.local:8096;
+    }
+
+
+    # {name_of_svc.{namespace}.default.svc.cluster.local}
+
+    ##################
+    # Load Balancing #
+    ##################
+
+    #
+    # - Round Robin (the default)
+    #   Distributes requests in order across the list of upstream servers.
+    #
+    # - Least Connections
+    #   Sends requests to the server with the lowest number of
+    #   active connections.
+    #   e.g.
+    #   least_conn;
+    #
+    # - Least Time
+    #   Exclusive to NGINX Plus. Sends requests to the server selected by a
+    #   formula that combines the fastest response time and fewest active
+    #   connections: `least_time header | last_byte [inflight];`
+    #   e.g.
+    #   least_time last_byte;
+    #
+    #  - Hash
+    #    Distributes requests based on a key you define, such as the client IP
+    #    address or the request URL. NGINX Plus can optionally apply a consistent
+    #    hash to minimize redistribution of loads if the set of upstream servers
+    #    changes: `hash key [consistent];`
+    #    e.g.
+    #    hash $request_uri consistent;
+    #
+    #  - IP Hash (HTTP only)
+    #    Distributes requests based on the first three octets of
+    #    the client IP address.
+    #    e.g.
+    #    ip_hash;
+    #
+    #  - Random with Two Choices
+    #    Picks two servers at random and sends the request to the one that is
+    #    selected by then applying the Least Connections algorithm (or for NGINX Plus
+    #    the Least Time algorithm, if so configured): `random [two [method]]`
+    #    e.g.
+    #    random two; # Round Robin
+    #    random two least_conn; # Least connections
+    #    random two least_time=last_byte; # Least time: use header or last_byte
+  vinrouter.js: |
+    function route(r) {
+   
+        r.subrequest('/vinrouter')
+        .then(reply => {
+            r.error(reply.responseBody);
+            var json = JSON.parse(reply.responseBody);
+            r.error(json.environment);
+            r.headersOut['Env'] = json.environment;
+            r.return(200);
+        })
+        .catch(e => { 
+            r.error(e);
+            r.return(500, e);
+            });
+
+
+     
+     }
+
+    export default {route};
+
+
+  www.nginx.local.conf: |
+
+    js_import conf.d/vinrouter.js;
+
+    map $http_CCRT_Subject $ccrtSubject {
+        "" "";      # is empty
+        default 1;  # not empty
+    }
+
+    # Check CN value in CCRT-Subject Header exists and
+    # set $ccrtSubject_vin to the value CN
+    # e.g. CN=xxxxxxxxxxxxx
+
+    map $http_CCRT_Subject $ccrtSubject_vin {
+        default "";      # is empty
+        # Case senstive (~) matching
+        "~CN=(?<vin>[0-9A-Z]+)[,/]?" $vin;  # not empty
+    }
+
+    map $route $upstream {
+        default         production;
+        PROD            production;
+        DEV             dev;
+    }
+
+    # nginx.local HTTP
+    server {
+        listen 80 default_server;
+        server_name nginx.local "";
+        status_zone nginx.local_http;
+
+        proxy_intercept_errors on;     # Do not send backend errors to the client
+        default_type application/json; # If no content-type then assume JSON
+
+        error_log  /var/log/nginx/error.log  debug;
+
+
+
+        location / {
+
+
+            auth_request /get_env_trampoline;
+            auth_request_set $route $sent_http_env;
+
+            if ($ccrtSubject_vin = "") {
+                return 400;
+            }
+
+            proxy_pass_request_body on;
+            add_header X-Body $request_body;
+            proxy_pass http://$upstream;
+
+        }
+
+        location = /get_env_trampoline {
+            internal;
+            proxy_pass http://127.0.0.1:8001/get_env;
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+        }
+
+
+        # Active Healthcheck
+        # location @health_check {
+
+        #         proxy_pass http://vinrouter/;
+
+        #         health_check interval=5s fails=2 passes=2 uri=/health match=status_json_ok;
+        #         access_log  /var/log/nginx/health_check.log main;
+
+        #         internal;  # Internal request only
+        # }
+
+    }
+
+    server {
+
+        listen 8001;
+        location = /get_env {
+            allow 127.0.0.1;
+            js_content vinrouter.route;
+        }
+
+        location = /vinrouter {
+
+            internal;
+            proxy_pass http://vinrouter/api/vins/$ccrtSubject_vin;
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+
+        }
+
+    }
+kind: ConfigMap
+metadata:
+  name: nginx-plus-conf-d
+  namespace: default
+  selfLink: /api/v1/namespaces/default/configmaps/conf-d

@@ -1,0 +1,41 @@
+apiVersion: v1
+data:
+  production.conf: |
+    #
+    # Application JSON. Dummy servers.
+    #
+    server {
+      listen 8095;
+      listen 8096;
+      listen 8097;
+      listen 8098;
+      listen 8099;
+      server_name production.default.svc.cluster.local;
+
+            default_type application/json;
+
+            # Add custom headers
+            add_header X-Whom "WEB-$server_port"; # WEB-$proxy_port
+
+            # Don't cache me
+            expires -1;
+
+            # Return webpage
+            location / {
+              return 200 '{
+                "environment": "production"
+                }';
+                add_header X-Cert-Name $http_x_cert_name;
+            }
+
+            # Health check page
+            location /health { 
+              return 200 'healthy';
+            }
+
+    }
+kind: ConfigMap
+metadata:
+  name: production-conf-d
+  namespace: default
+  selfLink: /api/v1/namespaces/default/configmaps/conf-d

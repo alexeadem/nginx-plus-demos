@@ -1,0 +1,129 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-plus
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx-plus
+  template:
+    metadata:
+      labels: 
+        app: nginx-plus
+      annotations:
+        # https://stackoverflow.com/questions/56954670/configmap-change-doesnt-reflect-automatically-on-respective-pods
+        # configmap.reloader.stakater.com/reload: "nginx-plus-conf-d"
+    spec:
+ #     hostNetwork: true
+ #     hostPID: true
+      containers:
+        - name: nginx-plus
+          image: localhost:5000/nginx-plus:22-r1
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: dockersock
+              mountPath: /var/run/docker.sock
+            - name: containerdsock
+              mountPath: /run/containerd
+            - name: proc1nsmount
+              mountPath: /host/proc/1/ns
+            - name: sysdmount
+              mountPath: /etc/systemd/system
+            - name: nginx-plus-conf-d
+              mountPath: /etc/nginx/conf.d
+      restartPolicy: Always
+      volumes:
+        - name: dockersock
+          hostPath:
+            path: /var/run/docker.sock
+        - name: containerdsock
+          hostPath:
+            path: /run/containerd
+        - name: proc1nsmount
+          hostPath:
+            path: /proc/1/ns
+        - name: sysdmount
+          hostPath:
+            path: /etc/systemd/system
+        - name: nginx-plus-conf-d
+          configMap:
+            name: nginx-plus-conf-d
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-plus
+  namespace: default
+spec:
+  selector:
+    app: nginx-plus
+  ports:
+  - port: 80
+    name: http
+    targetPort: 80
+    protocol: TCP 
+---
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: nginx-plus-api
+    namespace: default
+  spec:
+    selector:
+      app: nginx-plus
+    ports:
+    - port: 8080
+      name: http
+      targetPort: 8080
+      protocol: TCP 
+---
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: nginx-plus
+  spec:
+    #tls:
+    #- hosts:
+    #  - nginx.local
+      #secretName: cafe-secret
+    rules:
+    - host: nginx.local
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: nginx-plus
+            servicePort: 80
+---
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: nginx-plus-api
+  spec:
+    #tls:
+    #- hosts:
+    #  - nginx.local
+      #secretName: cafe-secret
+    rules:
+    - host: api.nginx.local
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: nginx-plus-api
+            servicePort: 8080
+            
+
+
+
+

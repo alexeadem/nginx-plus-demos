@@ -1,0 +1,188 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinrouter
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: vinrouter
+  template:
+    metadata:
+      labels: 
+        app: vinrouter
+      annotations:
+        # https://stackoverflow.com/questions/56954670/configmap-change-doesnt-reflect-automatically-on-respective-pods
+        # configmap.reloader.stakater.com/reload: "vinrouter-conf-d"
+    spec:
+#      hostNetwork: true
+#      hostPID: true
+      containers:
+        - name: vinrouter
+          image: localhost:5000/nginx-plus:22-r1
+          imagePullPolicy: Always
+          # ports:
+          # - containerPort: 9096
+          #   name: ssl
+          #   protocol: TCP
+          volumeMounts:
+          - name: vinrouter-conf-d
+            mountPath: /etc/nginx/conf.d
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      volumes:
+      - name: vinrouter-conf-d
+        configMap:
+          name: vinrouter-conf-d
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vinrouter
+  labels:
+    name: vinrouter
+spec:
+  clusterIP: None
+  ports:
+  - name: "8096"
+    port: 8096
+    targetPort: 8096
+    protocol: TCP
+  # - name: "8097"
+  #   port: 8097
+  #   targetPort: 8097
+  #   protocol: TCP
+  # - name: "8098"
+  #   port: 8098
+  #   targetPort: 8098
+  #   protocol: TCP
+  # - name: "8099"
+  #   port: 8099
+  #   targetPort: 8099
+  #   protocol: TCP
+  selector:
+    app: vinrouter
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: production
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: production
+  template:
+    metadata:
+      labels: 
+        app: production
+      annotations:
+    spec:
+
+      containers:
+        - name: production
+          image: localhost:5000/nginx-plus:22-r1
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: production-conf-d
+            mountPath: /etc/nginx/conf.d
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      volumes:
+      - name: production-conf-d
+        configMap:
+          name: production-conf-d
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: production
+  labels:
+    name: production
+spec:
+  clusterIP: None
+  ports:
+  - name: "8096"
+    port: 8096
+    targetPort: 8096
+    protocol: TCP
+  selector:
+    app: production
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: dev
+  template:
+    metadata:
+      labels: 
+        app: dev
+      annotations:
+    spec:
+
+      containers:
+        - name: dev
+          image: localhost:5000/nginx-plus:22-r1
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: dev-conf-d
+            mountPath: /etc/nginx/conf.d
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      volumes:
+      - name: dev-conf-d
+        configMap:
+          name: dev-conf-d
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev
+  labels:
+    name: dev
+spec:
+  clusterIP: None
+  ports:
+  - name: "8096"
+    port: 8096
+    targetPort: 8096
+    protocol: TCP
+  selector:
+    app: dev
+---
+
+      
+      
+      
+
+

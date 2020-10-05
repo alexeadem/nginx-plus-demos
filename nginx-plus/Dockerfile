@@ -11,7 +11,7 @@ RUN chmod 644 /etc/apk/cert* \
  # Prepare repo config and install NGINX Plus (https://cs.nginx.com/repo_setup)
  && wget -O /etc/apk/keys/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
  && printf "https://plus-pkgs.nginx.com/alpine/v`egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release`/main\n" | tee -a /etc/apk/repositories \
- && apk add nginx-plus \
+ && apk add nginx-plus nginx-plus-module-njs \
  && apk add curl \
  # Clear apk cache
  && rm -rf /var/cache/apk/* \
@@ -23,6 +23,13 @@ RUN chmod 644 /etc/apk/cert* \
  # Optional: Create State file folder and set permissions
  && mkdir -p /var/lib/nginx/state \
  && chown -R nginx /var/lib/nginx/state
+
+
+# COPY web content
+COPY nginx-plus/usr/share/nginx/html /usr/share/nginx/html
+
+# COPY Nginx configuration directory
+COPY nginx-plus/etc/nginx /etc/nginx
 
 RUN chown -R nginx:nginx /etc/nginx \
  # Forward request logs to docker log collector

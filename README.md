@@ -37,6 +37,7 @@
     - [Trobleshooting](#trobleshooting)
   - [8. NJS](#8-njs)
     - [Use Case](#use-case)
+    - [Configuration](#configuration)
     - [Deploy demo](#deploy-demo)
     - [Test](#test-4)
   - [9. Monitoring](#9-monitoring)
@@ -456,9 +457,103 @@ I1002 18:28:22.811121       1 event.go:278] Event(v1.ObjectReference{Kind:"Ingre
 
 ![Infrastructure and communication diagram](njs-diag.png)
 
+
+This demo simulates communication between cars (clients) sending their VINs nunmbers to the Nginx Plus for routing to a specific backend: Either DEV or PROD. Nginx will receive the car request and pass it to a VIN Router which will set 
+the specific environemnt based on the VIN number in the `body` response back to Nginx Plus. Using NJS Nginx will parse the environmnet variable and and proxy the car request to etiher PROD or DEV.
+
+### Configuration
+
+> Note `apk add nginx-plus-module-njs` is added in Dockerfile. And `load_module modules/ngx_http_js_module.so;` in `nginx-plus/etc/nginx/nginx.conf`. Adding the module when building the image and enabling it in the configuration is required in order to use NJS.
+
+Relevant config `njs/nginx-plus-conf-d.yaml`
+
+```
+
+    js_import conf.d/vinrouter.js;
+
+    map $http_CCRT_Subject $ccrtSubject {
+        "" "";      # is empty
+        default 1;  # not empty
+    }
+
+    # Check CN value in CCRT-Subject Header exists and
+    # set $ccrtSubject_vin to the value CN
+    # e.g. CN=xxxxxxxxxxxxx
+
+    map $http_CCRT_Subject $ccrtSubject_vin {
+        default "";      # is empty
+        # Case senstive (~) matching
+        "~CN=(?<vin>[0-9A-Z]+)[,/]?" $vin;  # not empty
+    }
+
+    map $route $upstream {
+        default         production;
+        PROD            production;
+        DEV             dev;
+    }
+
+    # nginx.local HTTP
+    server {
+        listen 80 default_server;
+        server_name nginx.local "";
+        status_zone nginx.local_http;
+
+        proxy_intercept_errors on;     # Do not send backend errors to the client
+        default_type application/json; # If no content-type then assume JSON
+
+        error_log  /var/log/nginx/error.log  debug;
+
+
+
+        location / {
+
+
+            auth_request /get_env_trampoline;
+            auth_request_set $route $sent_http_env;
+
+            if ($ccrtSubject_vin = "") {
+                return 400;
+            }
+
+            proxy_pass_request_body on;
+            add_header X-Body $request_body;
+            proxy_pass http://$upstream;
+
+        }
+
+        location = /get_env_trampoline {
+            internal;
+            proxy_pass http://127.0.0.1:8001/get_env;
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+        }
+
+  ```
+
 ### Deploy demo
 
+`kubectl apply -f njs`
+
 ### Test 
+
+Test Prod
+```
+> Adding a number in fron of the VIN will router to PROD
+$ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=ADF4477' --resolve nginx.local:80:172.17.0.3
+{
+            "environment": "production"
+            }
+```
+
+Test Dev
+> Adding a number in fron of the VIN will router to DEV
+
+```
+$ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=0DF4477' --resolve nginx.local:80:172.17.0.3
+{
+            "environment": "dev"
+            }
+```
 
 ## 9. Monitoring
 
