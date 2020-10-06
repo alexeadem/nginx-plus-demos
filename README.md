@@ -533,7 +533,7 @@ Relevant config `njs/nginx-plus-conf-d.yaml`
 ### Test 
 
 Test Prod
-> Adding a number in front of the VIN will route to PROD
+> Adding a letter in front of the VIN will route to PROD
 ```
 $ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=ADF4477' --resolve nginx.local:80:172.17.0.3
 {
