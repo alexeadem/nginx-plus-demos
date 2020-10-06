@@ -28,11 +28,11 @@
       - [Troubleshooting](#troubleshooting)
   - [7. Multiple Ingresses](#7-multiple-ingresses)
     - [Deploy](#deploy)
-    - [Get OSS Nginx Ingress](#get-oss-nginx-ingress)
-    - [Get Nginx Plus Ingress](#get-nginx-plus-ingress)
+    - [OSS Nginx Ingress](#oss-nginx-ingress)
+    - [Nginx Plus Ingress](#nginx-plus-ingress)
     - [Classes](#classes)
     - [Annotations](#annotations)
-    - [Run ingress on specific ingress](#run-ingress-on-specific-ingress)
+    - [Run app on specific ingress](#run-app-on-specific-ingress)
     - [Test](#test-3)
     - [Trobleshooting](#trobleshooting)
   - [8. NJS](#8-njs)
@@ -305,7 +305,7 @@ NAME                             READY   STATUS    RESTARTS   AGE    IP         
 nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          125m   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>           <none>
 ```
 
-### Get OSS Nginx Ingress
+### OSS Nginx Ingress
 
 ```
 $ kubectl get pods -lapp.kubernetes.io/component=controller -n ingress-nginx -o wide
@@ -334,7 +334,7 @@ and ip  `172.17.0.3`
           key: node-role.kubernetes.io/master
           operator: Equal
 ```
-### Get Nginx Plus Ingress
+### Nginx Plus Ingress
 
 ```
 $ kubectl get pods -n nginx-ingress -o wide
@@ -373,7 +373,7 @@ metadata:
 > See `nginx-plus-ingress/k8s/complete-example/cafe.yaml` for configuration
 > If no annotation is added the OSS nginx will pick up the ingress
 
-### Run ingress on specific ingress
+### Run app on specific ingress
 
 ```
 $ kubectl apply -f nginx-plus-ingress/k8s/complete-example
