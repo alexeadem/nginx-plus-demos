@@ -454,8 +454,8 @@ I1002 18:28:22.811121       1 event.go:278] Event(v1.ObjectReference{Kind:"Ingre
 ![Infrastructure and communication diagram](njs-diag.png)
 
 
-This demo simulates communication between cars (clients) sending their VINs numbers to the Nginx Plus for routing to a specific backend: Either DEV or PROD. Nginx will receive the car request and pass it to a VIN Router which will set
-the specific environment based on the VIN number in the `body` response back to Nginx Plus. Using NJS Nginx Plus will parse the environment variable and proxy the car request to either PROD or DEV.
+This demo simulates communication between cars (clients) sending their VINs numbers to Nginx Plus for routing to a specific backend: Either DEV or PROD. Nginx will receive the car request and pass it to a VIN Router which will set
+the specific environment based on the VIN number in the `body` response back to Nginx Plus. Using NJS Nginx Plus will parse the environment variable `Env` and proxy the car request to either PROD or DEV.
 
 ### Configuration
 
