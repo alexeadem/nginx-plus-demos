@@ -41,9 +41,6 @@
     - [Deploy demo](#deploy-demo)
     - [Test](#test-4)
   - [9. Mutual TLS](#9-mutual-tls)
-    - [Deploy mTLS app](#deploy-mtls-app)
-    - [Deploy Nginx Plus INgress configuration](#deploy-nginx-plus-ingress-configuration)
-    - [Test](#test-5)
 
 
 
@@ -561,14 +558,9 @@ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp 
 
 > Please note that  nginx-ingress > v1.9.0 and  and k8s version > v1.10.0 are needed for this demo.
 
+If you haven't already done it, follow section `6` of this guide to build, ship, and run the Nginx Plus Ingress docker image.
 
 
-```
-kubectl version
-cd ../kubernetes-ingress/
-git checkout v1.9.0
-git describe --tags
-make DOCKERFILE=DockerfileForPlus VERSION=v1.9.0 PREFIX=localhost:5000/nginx-plus-ingress
 ```
 ### Deploy mTLS app
 
