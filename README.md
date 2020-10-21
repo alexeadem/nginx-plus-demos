@@ -60,7 +60,7 @@ cd nginx-plus-demos/licenses
 > Copy your licenses under `licenses` and run `./validate-licenses.sh`
 
 ```
-$ ./validate-licenses.sh 
+./validate-licenses.sh 
 Certificate will not expire
 in the next 15 days
 Certifcate expiration [ OK ]
@@ -76,20 +76,20 @@ Certificate pair match [ OK ]
 ### Deploy QBO Cluster
 
 ```
-$ qbo add cluster -w3 -p5000 -d`hostname`
+qbo add cluster -w3 -p5000 -d`hostname`
 [2020/10/02 14:32:28:0991] N:  master.d5540.eadem.com                        ready
 [2020/10/02 14:33:30:1159] N:  worker-353c5fdc.d5540.eadem.com               ready
 [2020/10/02 14:34:20:8543] N:  worker-03f50753.d5540.eadem.com               ready
 [2020/10/02 14:35:22:7378] N:  worker-6e9bcb57.d5540.eadem.com               ready
 
-$ kubectl get nodes
+kubectl get nodes
 NAME                              STATUS   ROLES    AGE     VERSION
 master.d5540.eadem.com            Ready    master   4m6s    v1.18.1-dirty
 worker-03f50753.d5540.eadem.com   Ready    <none>   113s    v1.18.1-dirty
 worker-353c5fdc.d5540.eadem.com   Ready    <none>   2m54s   v1.18.1-dirty
 worker-6e9bcb57.d5540.eadem.com   Ready    <none>   61s     v1.18.1-dirty
 
-$ qbo get nodes
+qbo get nodes
 c9a6532d01e6 worker-6e9bcb57.d5540.eadem.com          172.17.0.6         eadem/node:v1.18.1        running             
 0924454fe5f1 worker-03f50753.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
 60e28030e3de worker-353c5fdc.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
@@ -105,7 +105,7 @@ e60d01ebc96f master.d5540.eadem.com                   172.17.0.3         eadem/n
 
 ### Start
 ```
-$ kubectl apply -f https://raw.githubusercontent.com/alexeadem/qbo-ctl/master/conf/registry.yaml
+kubectl apply -f https://raw.githubusercontent.com/alexeadem/qbo-ctl/master/conf/registry.yaml
 persistentvolumeclaim/registry-data created
 persistentvolume/registry-data created
 replicationcontroller/registry created
@@ -115,7 +115,7 @@ service/registry created
 ### Test
 
 ```
-$ curl localhost:5000/v2/_catalog
+curl localhost:5000/v2/_catalog
 {"repositories":[]}
 ```
 
@@ -142,14 +142,14 @@ kubectl apply -f nginx-plus/k8s
 ```
 ### Test
 ```
-$ kubectl get pods
+kubectl get pods
 NAME                                   READY   STATUS    RESTARTS   AGE
 nginx-plus-c7958bcd6-85dr4             1/1     Running   3          101s
 nginx-plus-upstream-6778787f99-vwmrg   1/1     Running   0          101s
 ```
 #### Get NodePort
 ```
-$ kubectl get svc
+kubectl get svc
 NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
 kubernetes            ClusterIP   172.16.0.1       <none>        443/TCP                      12m
 nginx-plus            NodePort    172.16.143.152   <none>        80:30080/TCP,443:30443/TCP   2m10s
@@ -157,7 +157,7 @@ nginx-plus-upstream   ClusterIP   None             <none>        <none>         
 ```
 #### Get worker IPs
 ```
-$ qbo get nodes
+qbo get nodes
 c9a6532d01e6 worker-6e9bcb57.d5540.eadem.com          172.17.0.6         eadem/node:v1.18.1        running             
 0924454fe5f1 worker-03f50753.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
 60e28030e3de worker-353c5fdc.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
@@ -165,7 +165,7 @@ e60d01ebc96f master.d5540.eadem.com                   172.17.0.3         eadem/n
 ```
 #### Connect to NodePort 
 ```
-$ curl 172.17.0.4:30080
+curl 172.17.0.4:30080
 Status code: 200
 Server address: 192.168.6.193:8096
 Server name: nginx-plus-upstream-6778787f99-vwmrg
@@ -182,41 +182,43 @@ Request ID: 779da9d538851beb1d30bbf66db19704
 
 ### Clone code
 ```
-$ cd ..
-$ git clone https://github.com/nginxinc/kubernetes-ingress.git
+cd ..
+git clone https://github.com/nginxinc/kubernetes-ingress.git
 ```
 ### Checkout Specific Tag
 ```
-$ cd kubernetes-ingress
-$ git checkout tags/v1.7.2
+cd kubernetes-ingress
+git checkout tags/v1.9.0
 ```
 ### Licenses
 ```
-$ cp licenses/nginx-repo.crt licenses/nginx-repo.key ../kubernetes-ingress/
-$ cd ../kubernetes-ingress/
+cp licenses/nginx-repo.crt licenses/nginx-repo.key ../kubernetes-ingress/
+cd ../kubernetes-ingress/
 ```
 ### Build, Tag & Push
 ```
-make DOCKERFILE=DockerfileForPlus VERSION=v1.7.2 PREFIX=localhost:5000/nginx-plus-ingress
+make DOCKERFILE=DockerfileForPlus VERSION=v1.9.0 PREFIX=localhost:5000/nginx-plus-ingress
 ```
 
 ### Run
 ```
-$ kubectl create namespace nginx-ingress
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/rbac/rbac.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ns-and-sa.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/nginx-config.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ts-definition.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/vs-definition.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/vsr-definition.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/default-server-secret.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/deployments/deployment/nginx-plus-ingress.yaml
-$ kubectl apply -f nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml
+kubectl create namespace nginx-ingress
+kubectl apply -f nginx-plus-ingress/k8s/deployments/rbac/rbac.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ns-and-sa.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/nginx-config.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ts-definition.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/vs-definition.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/vsr-definition.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/default-server-secret.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ingress-class.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/default-server-secret.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/deployment/nginx-plus-ingress.yaml
+kubectl apply -f nginx-plus-ingress/k8s/tcp-udp/nginx-plus-config.yaml
 ```
 ### Test
 
 ```
-$ kubectl get pods -n nginx-ingress  -o wide 
+kubectl get pods -n nginx-ingress  -o wide 
 NAME                             READY   STATUS    RESTARTS   AGE   IP                NODE                              NOMINATED NODE   READINESS GATES
 nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          52s   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>          
 ```
@@ -235,7 +237,7 @@ e60d01ebc96f master.d5540.eadem.com
 
 ```
 
-$ curl  172.17.0.3:5000/v2/_catalog
+curl  172.17.0.3:5000/v2/_catalog
 {"repositories":["nginx-plus","nginx-plus-ingress"]}
 
 ```
@@ -258,7 +260,7 @@ $ curl  172.17.0.3:5000/v2/_catalog
 #### Test UDP Ingress
 
 ```
-$ nslookup registry.kube-system.svc.cluster.local 172.17.0.3
+nslookup registry.kube-system.svc.cluster.local 172.17.0.3
 Server:         172.17.0.3
 Address:        172.17.0.3#53
 
@@ -287,7 +289,7 @@ Address: 172.16.69.112
 #### Troubleshooting
 
 ```
-$ kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
+kubectl logs -f -lapp=nginx-ingress -n nginx-ingress
 
 ```
 
@@ -308,7 +310,7 @@ nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          125m   192.168.150
 ### OSS Nginx Ingress
 
 ```
-$ kubectl get pods -lapp.kubernetes.io/component=controller -n ingress-nginx -o wide
+kubectl get pods -lapp.kubernetes.io/component=controller -n ingress-nginx -o wide
 NAME                                        READY   STATUS    RESTARTS   AGE     IP               NODE                     NOMINATED NODE   READINESS GATES
 ingress-nginx-controller-679d8fd6f6-d2zwv   1/1     Running   0          3h13m   192.168.43.196   master.d5540.eadem.com   <none>           <none>
 ```
@@ -337,7 +339,7 @@ and ip  `172.17.0.3`
 ### Nginx Plus Ingress
 
 ```
-$ kubectl get pods -n nginx-ingress -o wide
+kubectl get pods -n nginx-ingress -o wide
 NAME                             READY   STATUS    RESTARTS   AGE    IP                NODE                              NOMINATED NODE   READINESS GATES
 nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          137m   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>           <none>
 ```
@@ -376,7 +378,7 @@ metadata:
 ### Run app on specific ingress
 
 ```
-$ kubectl apply -f nginx-plus-ingress/k8s/complete-example
+kubectl apply -f nginx-plus-ingress/k8s/complete-example
 ```
 
 ### Test
@@ -384,7 +386,7 @@ $ kubectl apply -f nginx-plus-ingress/k8s/complete-example
 Check that your test app is running
 
 ```
-$ kubectl get pods
+kubectl get pods
 NAME                                   READY   STATUS    RESTARTS   AGE
 coffee-5f56ff9788-qfn4m                1/1     Running   0          60s
 coffee-5f56ff9788-t9bkz                1/1     Running   0          60s
@@ -396,13 +398,13 @@ tea-69c99ff568-mt8k4                   1/1     Running   0          60s
 ```
 
 ```
-$ kubectl get pod -lapp=nginx-ingress -n nginx-ingress -o wide
+kubectl get pod -lapp=nginx-ingress -n nginx-ingress -o wide
 NAME                             READY   STATUS    RESTARTS   AGE    IP                NODE                              NOMINATED NODE   READINESS GATES
 nginx-ingress-7f9d695cbd-8ctv5   1/1     Running   0          177m   192.168.150.135   worker-353c5fdc.d5540.eadem.com   <none>           <none>
 ```
 
 ```
-$ qbo get nodes
+qbo get nodes
 c9a6532d01e6 worker-6e9bcb57.d5540.eadem.com          172.17.0.6         eadem/node:v1.18.1        running             
 0924454fe5f1 worker-03f50753.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
 60e28030e3de worker-353c5fdc.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
@@ -414,7 +416,7 @@ The ingress is running in worker node `worker-353c5fdc.d5540.eadem.com` with IP 
 And finally test the nginx plus ingress
 
 ```
-$ curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.0.4
+curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.0.4
 Server address: 192.168.14.4:8080
 Server name: coffee-5f56ff9788-t9bkz
 Date: 02/Oct/2020:18:34:52 +0000
@@ -425,7 +427,7 @@ Request ID: 4867ceb1d1d153a3fbd4487ce5af1f4b
 > Note that if you try the other ingress running in the master node the request will fail
 
 ```
-$ curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.0.3
+curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.0.3
 <html>
 <head><title>404 Not Found</title></head>
 <body>
@@ -440,7 +442,7 @@ $ curl https://cafe.example.com/coffee -k --resolve cafe.example.com:443:172.17.
 Once you deploy the ingress you should see that the cafe ingress has been picked up and added by the right nginx plus ingress
 
 ```
-$ kubectl logs -f nginx-ingress-7f9d695cbd-8ctv5 -n nginx-ingress
+kubectl logs -f nginx-ingress-7f9d695cbd-8ctv5 -n nginx-ingress
 ```
 
 ```
@@ -535,7 +537,7 @@ Relevant config `njs/nginx-plus-conf-d.yaml`
 Test Prod
 > Adding a letter in front of the VIN will route to PROD
 ```
-$ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=ADF4477' --resolve nginx.local:80:172.17.0.3
+curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=ADF4477' --resolve nginx.local:80:172.17.0.3
 {
             "environment": "production"
             }
@@ -545,7 +547,7 @@ Test Dev
 > Adding a number in front of the VIN will route to DEV
 
 ```
-$ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=0DF4477' --resolve nginx.local:80:172.17.0.3
+curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp -H 'CCRT-Subject: C=DE, O=Daimler AG, OU=MBIIS-CERT, CN=0DF4477' --resolve nginx.local:80:172.17.0.3
 {
             "environment": "dev"
             }

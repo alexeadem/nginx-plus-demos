@@ -65,6 +65,15 @@ spec:
         - name: prometheus
           containerPort: {{ .Values.prometheus.port }}
 {{- end }}
+{{- if .Values.controller.readyStatus.enable }}
+        - name: readiness-port
+          containerPort: {{ .Values.controller.readyStatus.port}}
+        readinessProbe:
+          httpGet:
+            path: /nginx-ready
+            port: readiness-port
+          periodSeconds: 1
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: true
           runAsUser: 101 #nginx
@@ -90,6 +99,8 @@ spec:
 {{ toYaml .Values.controller.resources | indent 10 }}
         args:
           - -nginx-plus={{ .Values.controller.nginxplus }}
+          - -nginx-reload-timeout={{ .Values.controller.nginxReloadTimeout }}
+          - -enable-app-protect={{ .Values.controller.appprotect.enable }}
           - -nginx-configmaps=$(POD_NAMESPACE)/{{ include "nginx-ingress.configName" . }}
 {{- if .Values.controller.defaultTLS.secret }}
           - -default-server-tls-secret={{ .Values.controller.defaultTLS.secret }}
@@ -97,7 +108,9 @@ spec:
           - -default-server-tls-secret=$(POD_NAMESPACE)/{{ include "nginx-ingress.defaultTLSName" . }}
 {{- end }}
           - -ingress-class={{ .Values.controller.ingressClass }}
+{{- if semverCompare "<1.18.0" .Capabilities.KubeVersion.GitVersion }}
           - -use-ingress-class-only={{ .Values.controller.useIngressClassOnly }}
+{{- end }}
 {{- if .Values.controller.watchNamespace }}
           - -watch-namespace={{ .Values.controller.watchNamespace }}
 {{- end }}
@@ -128,7 +141,14 @@ spec:
           - -enable-prometheus-metrics={{ .Values.prometheus.create }}
           - -prometheus-metrics-listen-port={{ .Values.prometheus.port }}
           - -enable-custom-resources={{ .Values.controller.enableCustomResources }}
-{{- if .Values.controller.enableCustomResources  }}
+{{- if .Values.controller.enableCustomResources }}
           - -enable-tls-passthrough={{ .Values.controller.enableTLSPassthrough }}
+          - -enable-snippets={{ .Values.controller.enableSnippets }}
+{{- if .Values.controller.globalConfiguration.create }}
+          - -global-configuration=$(POD_NAMESPACE)/{{ include "nginx-ingress.name" . }}
 {{- end }}
+{{- end }}
+          - -ready-status={{ .Values.controller.readyStatus.enable }}
+          - -ready-status-port={{ .Values.controller.readyStatus.port }}
+          - -enable-latency-metrics={{ .Values.controller.enableLatencyMetrics }}
 {{- end }}

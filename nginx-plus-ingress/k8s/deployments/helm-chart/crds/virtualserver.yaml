@@ -2,6 +2,8 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: virtualservers.k8s.nginx.org
+  labels:
+    app.kubernetes.io/name: "nginx-ingress"
 spec:
   group: k8s.nginx.org
   versions:
@@ -218,8 +220,8 @@ spec:
                               type: object
                               properties:
                                 requestHeaders:
-                                  description: ProxyRequestHeaders defines the request
-                                    headers manipulation in an ActionProxy.
+                                  description: ProxyRequestHeaders defines the request headers
+                                    manipulation in an ActionProxy.
                                   type: object
                                   properties:
                                     pass:
@@ -242,9 +244,9 @@ spec:
                                     add:
                                       type: array
                                       items:
-                                        description: Header defines an HTTP Header
-                                          with an optional Always field to use with
-                                          the add_header NGINX directive.
+                                        description: Header defines an HTTP Header with
+                                          an optional Always field to use with the add_header
+                                          NGINX directive.
                                         type: object
                                         properties:
                                           always:
@@ -317,13 +319,12 @@ spec:
                                   pass:
                                     type: string
                                   proxy:
-                                    description: ActionProxy defines a proxy in an
-                                      Action.
+                                    description: ActionProxy defines a proxy in an Action.
                                     type: object
                                     properties:
                                       requestHeaders:
-                                        description: ProxyRequestHeaders defines the
-                                          request headers manipulation in an ActionProxy.
+                                        description: ProxyRequestHeaders defines the request headers
+                                          manipulation in an ActionProxy.
                                         type: object
                                         properties:
                                           pass:
@@ -331,8 +332,7 @@ spec:
                                           set:
                                             type: array
                                             items:
-                                              description: Header defines an HTTP
-                                                Header.
+                                              description: Header defines an HTTP Header.
                                               type: object
                                               properties:
                                                 name:
@@ -340,16 +340,16 @@ spec:
                                                 value:
                                                   type: string
                                       responseHeaders:
-                                        description: ProxyRequestHeaders defines the
-                                          response headers manipulation in an ActionProxy.
+                                        description: ProxyRequestHeaders defines the response
+                                          headers manipulation in an ActionProxy.
                                         type: object
                                         properties:
                                           add:
                                             type: array
                                             items:
-                                              description: Header defines an HTTP
-                                                Header with an optional Always field
-                                                to use with the add_header NGINX directive.
+                                              description: Header defines an HTTP Header with
+                                                an optional Always field to use with the add_header
+                                                NGINX directive.
                                               type: object
                                               properties:
                                                 always:
@@ -424,12 +424,13 @@ spec:
                             pass:
                               type: string
                             proxy:
-                              description: ActionProxy defines a proxy in an Action.
+                              description: ActionProxy defines a proxy in an
+                                Action.
                               type: object
                               properties:
                                 requestHeaders:
-                                  description: ProxyRequestHeaders defines the request
-                                    headers manipulation in an ActionProxy.
+                                  description: ProxyRequestHeaders defines the
+                                    request headers manipulation in an ActionProxy.
                                   type: object
                                   properties:
                                     pass:
@@ -437,7 +438,8 @@ spec:
                                     set:
                                       type: array
                                       items:
-                                        description: Header defines an HTTP Header.
+                                        description: Header defines an HTTP
+                                          Header.
                                         type: object
                                         properties:
                                           name:
@@ -445,16 +447,16 @@ spec:
                                           value:
                                             type: string
                                 responseHeaders:
-                                  description: ProxyRequestHeaders defines the response
-                                    headers manipulation in an ActionProxy.
+                                  description: ProxyRequestHeaders defines the
+                                    response headers manipulation in an ActionProxy.
                                   type: object
                                   properties:
                                     add:
                                       type: array
                                       items:
-                                        description: Header defines an HTTP Header
-                                          with an optional Always field to use with
-                                          the add_header NGINX directive.
+                                        description: Header defines an HTTP
+                                          Header with an optional Always field
+                                          to use with the add_header NGINX directive.
                                         type: object
                                         properties:
                                           always:

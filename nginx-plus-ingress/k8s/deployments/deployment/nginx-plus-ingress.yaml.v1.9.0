@@ -12,31 +12,35 @@ spec:
     metadata:
       labels:
         app: nginx-ingress
-     #annotations:
-       #prometheus.io/scrape: "true"
-       #prometheus.io/port: "9113"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9113"
     spec:
       serviceAccountName: nginx-ingress
       containers:
-      - image: nginx/nginx-ingress:1.9.0
-        imagePullPolicy: IfNotPresent
-        name: nginx-ingress
+      - image: localhost:5000/nginx-plus-ingress:v1.9.0
+        name: nginx-plus-ingress
         ports:
         - name: http
           containerPort: 80
+          hostPort: 80
         - name: https
           containerPort: 443
-        - name: readiness-port
-          containerPort: 8081
-       #- name: prometheus
-         #containerPort: 9113
-        readinessProbe:
-          httpGet:
-            path: /nginx-ready
-            port: readiness-port
-          periodSeconds: 1
+          hostPort: 443
+        - name: prometheus
+          containerPort: 9113
+          hostPort: 9113
+        - name: dns
+          containerPort: 53
+          protocol: UDP
+          hostPort: 53
+        - name: registry
+          containerPort: 5000
+          hostPort: 5000
+        imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: true
+          #runAsUser: 0
           runAsUser: 101 #nginx
           capabilities:
             drop:
@@ -53,10 +57,20 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         args:
+          - -nginx-plus
           - -nginx-configmaps=$(POD_NAMESPACE)/nginx-config
           - -default-server-tls-secret=$(POD_NAMESPACE)/default-server-secret
          #- -v=3 # Enables extensive logging. Useful for troubleshooting.
          #- -report-ingress-status
-         #- -external-service=nginx-ingress
-         #- -enable-prometheus-metrics
-         #- -global-configuration=$(POD_NAMESPACE)/nginx-configuration
+         #- -external-service=plus
+         #- -enable-leader-election
+          - -ingress-class=plus
+          - -enable-prometheus-metrics
+         # - -use-ingress-class-only
+         # - -global-configuration=$(POD_NAMESPACE)/nginx-configuration
+      # nodeSelector:
+      #   ingress-ready: 'true'
+      # tolerations:
+      #   - effect: NoSchedule
+      #     key: node-role.kubernetes.io/master
+      #     operator: Equal

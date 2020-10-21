@@ -61,4 +61,6 @@ spec:
          #- -report-ingress-status
          #- -external-service=nginx-ingress
           - -enable-prometheus-metrics
+          - -ingress-class=plus
+         #- -use-ingress-class-only # Deprecated as of k8s v1.18
          #- -global-configuration=$(POD_NAMESPACE)/nginx-configuration

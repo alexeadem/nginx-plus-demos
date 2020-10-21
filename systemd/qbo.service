@@ -1,0 +1,16 @@
+[Unit]
+Description=QBO Kubernetes
+Documentation=https://qbo.io
+BindsTo=docker.service
+After=network-online.target firewalld.service docker.service
+Wants=network-online.target
+#Requires=docker.socket
+
+[Service]
+TimeoutSec=0
+ExecStartPre=/home/centos/qbo-stop.sh
+ExecStart=/home/centos/qbo-start.sh
+#ExecStop=/home/centos/qbo-stop.sh
+
+[Install]
+WantedBy=multi-user.target
