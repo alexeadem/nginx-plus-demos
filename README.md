@@ -40,6 +40,10 @@
     - [Configuration](#configuration)
     - [Deploy demo](#deploy-demo)
     - [Test](#test-4)
+  - [Mutual TLS](#mutual-tls)
+    - [Deploy mTLS app](#deploy-mtls-app)
+    - [Deploy Nginx Plus INgress configuration](#deploy-nginx-plus-ingress-configuration)
+    - [Test](#test-5)
 
 
 
@@ -551,5 +555,69 @@ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp 
 {
             "environment": "dev"
             }
+```
+
+## Mutual TLS
+
+> Please note that  nginx-ingress > v1.9.0 and  and k8s version > v1.10.0 are needed for this demo.
+
+
+
+```
+kubectl version
+cd ../kubernetes-ingress/
+git checkout v1.9.0
+git describe --tags
+make DOCKERFILE=DockerfileForPlus VERSION=v1.9.0 PREFIX=localhost:5000/nginx-plus-ingress
+```
+### Deploy mTLS app
+
+```
+kubectl apply -f nginx-plus-ingress/k8s/ingress-mtls/webapp.yaml
+```
+### Deploy Nginx Plus INgress configuration
+```
+kubectl apply -f nginx-plus-ingress/k8s/ingress-mtls/ingress-mtls-secret.yaml
+kubectl apply -f nginx-plus-ingress/k8s/ingress-mtls/ingress-mtls.yaml
+kubectl apply -f nginx-plus-ingress/k8s/ingress-mtls/tls-secret.yaml
+kubectl apply -f nginx-plus-ingress/k8s/ingress-mtls/virtual-server.yam
+```
+
+### Test
+
+Get ingress worker node
+
+```
+kubectl get pods -lapp=nginx-ingress -n nginx-ingress -o wide
+NAME                             READY   STATUS    RESTARTS   AGE   IP                NODE                              NOMINATED NODE   READINESS GATES
+nginx-ingress-6cb66fc868-q6x5k   1/1     Running   0          10m   192.168.142.142   worker-97c3e840.d5540.eadem.com   <none>           <none>
+```
+
+Get worker node IP
+```
+qbo get nodes
+cdc491667798 worker-7224a7a4.d5540.eadem.com          172.17.0.5         eadem/node:v1.18.1        running             
+412c34fbe2a7 worker-97c3e840.d5540.eadem.com          172.17.0.4         eadem/node:v1.18.1        running             
+e2186bca311a master.d5540.eadem.com                   172.17.0.3         eadem/node:v1.18.1        running
+```
+
+```
+curl --insecure --resolve webapp.example.com:443:172.17.0.4 https://webapp.example.com:443/
+<html>
+<head><title>400 No required SSL certificate was sent</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<center>No required SSL certificate was sent</center>
+<hr><center>nginx/1.19.0</center>
+</body>
+</html>
+```
+```
+curl --insecure --resolve webapp.example.com:443:172.17.0.4 https://webapp.example.com:443/ --cert nginx-plus-ingress/k8s/ingress-mtls/client-cert.pem --key nginx-plus-ingress/k8s/ingress-mtls/client-key.pem
+Server address: 192.168.2.206:8080
+Server name: webapp-d55c6448-92twn
+Date: 21/Oct/2020:12:45:52 +0000
+URI: /
+Request ID: 64acd047e4daea9bc2ea26511f4aceba
 ```
 
