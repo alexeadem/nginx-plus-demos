@@ -21,6 +21,12 @@ usage()
        
 }
 
+license()
+{
+cd licenses
+./validate-licenses.sh
+}
+
 delete()
 {
 
