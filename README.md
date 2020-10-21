@@ -41,6 +41,9 @@
     - [Deploy demo](#deploy-demo)
     - [Test](#test-4)
   - [9. Mutual TLS](#9-mutual-tls)
+    - [Deploy mTLS app](#deploy-mtls-app)
+    - [Deploy Nginx Plus INgress configuration](#deploy-nginx-plus-ingress-configuration)
+    - [Test](#test-5)
 
 
 
@@ -561,7 +564,7 @@ curl  http://nginx.local/web-services/user-data/1.1/auto-get-profiles-timestamp 
 If you haven't already done it, follow section `6` of this guide to build, ship, and run the Nginx Plus Ingress docker image.
 
 
-```
+
 ### Deploy mTLS app
 
 ```
@@ -593,6 +596,8 @@ cdc491667798 worker-7224a7a4.d5540.eadem.com          172.17.0.5         eadem/n
 e2186bca311a master.d5540.eadem.com                   172.17.0.3         eadem/node:v1.18.1        running
 ```
 
+Test without client certs
+
 ```
 curl --insecure --resolve webapp.example.com:443:172.17.0.4 https://webapp.example.com:443/
 <html>
@@ -604,6 +609,8 @@ curl --insecure --resolve webapp.example.com:443:172.17.0.4 https://webapp.examp
 </body>
 </html>
 ```
+
+Test using client certs
 ```
 curl --insecure --resolve webapp.example.com:443:172.17.0.4 https://webapp.example.com:443/ --cert nginx-plus-ingress/k8s/ingress-mtls/client-cert.pem --key nginx-plus-ingress/k8s/ingress-mtls/client-key.pem
 Server address: 192.168.2.206:8080
