@@ -5,7 +5,7 @@ metadata:
   namespace: nginx-ingress
 data:
     stream-snippets: |
-      resolver 10.96.0.10 valid=5s;
+      resolver 172.16.0.10 valid=5s;
 
       upstream coredns-udp {
           zone coredns-udp 64k;
