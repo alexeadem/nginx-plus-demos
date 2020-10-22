@@ -47,12 +47,13 @@ spec:
           periodSeconds: 1
         securityContext:
           allowPrivilegeEscalation: true
-          runAsUser: 101 #nginx
+          #runAsUser: 101 #nginx
+          runAsUser: 0
           capabilities:
-            drop:
-            - ALL
-            add:
-            - NET_BIND_SERVICE
+            # drop:
+            # - ALL
+            # add:
+            # - NET_BIND_SERVICE
         env:
         - name: POD_NAMESPACE
           valueFrom:

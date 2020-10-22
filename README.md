@@ -213,6 +213,7 @@ kubectl apply -f nginx-plus-ingress/k8s/deployments/common/nginx-config.yaml
 kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ts-definition.yaml
 kubectl apply -f nginx-plus-ingress/k8s/deployments/common/vs-definition.yaml
 kubectl apply -f nginx-plus-ingress/k8s/deployments/common/vsr-definition.yaml
+kubectl apply -f nginx-plus-ingress/k8s/deployments/common/policy-definition.yaml
 kubectl apply -f nginx-plus-ingress/k8s/deployments/common/ingress-class.yaml
 kubectl apply -f nginx-plus-ingress/k8s/deployments/common/default-server-secret.yaml
 kubectl apply -f nginx-plus-ingress/k8s/deployments/deployment/nginx-plus-ingress.yaml
