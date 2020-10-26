@@ -56,7 +56,7 @@
     - [Access Prometheus UI](#access-prometheus-ui)
     - [Get grafana password](#get-grafana-password)
     - [Access Grafana UI](#access-grafana-ui)
-  - [Add a Dashboard](#add-a-dashboard)
+  - [Add Nginx Plus Dashboard](#add-nginx-plus-dashboard)
 
 
 
@@ -709,7 +709,7 @@ and user `admin` and the password obtained in the previous section
 
 ![Grafana UI](grafana_ui.png)
 
-## Add a Dashboard
+## Add Nginx Plus Dashboard
 
 
 ![Add a dashboard](add_dashboard.png)
