@@ -45,18 +45,9 @@
     - [Deploy Nginx Plus INgress configuration](#deploy-nginx-plus-ingress-configuration)
     - [Test](#test-5)
   - [10. Prometheus & Grafana](#10-prometheus--grafana)
-    - [Install Helm](#install-helm)
-    - [Create namespace monitoring](#create-namespace-monitoring)
-    - [Install Prometheus Operator via Helm](#install-prometheus-operator-via-helm)
-    - [Apply Prometheus and Grafana configs](#apply-prometheus-and-grafana-configs)
+    - [Configuration](#configuration-1)
   - [Test](#test-6)
-    - [Get worker node name](#get-worker-node-name)
-    - [Get worker IP Adresss](#get-worker-ip-adresss)
-    - [Add hosts entries](#add-hosts-entries)
-    - [Access Prometheus UI](#access-prometheus-ui)
-    - [Get grafana password](#get-grafana-password)
-    - [Access Grafana UI](#access-grafana-ui)
-  - [Add Nginx Plus Dashboard](#add-nginx-plus-dashboard)
+    - [Nginx Plus Dashboard](#nginx-plus-dashboard)
 
 
 
@@ -635,7 +626,8 @@ Request ID: 64acd047e4daea9bc2ea26511f4aceba
 
 ## 10. Prometheus & Grafana
 
-### Install Helm
+### Configuration
+Install Helm
 ```
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
 chmod 700 get_helm.sh 
@@ -644,32 +636,32 @@ helm repo add stable https://charts.helm.sh/stable --force-update
 helm repo update
 ```
 
-### Create namespace monitoring
+Create namespace monitoring
 ```
 kubectl create namespace monitoring
 ```
 
-### Install Prometheus Operator via Helm
+Install Prometheus Operator via Helm
 ```
 helm install prometheus-operator --namespace monitoring stable/prometheus-operator --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false --set grafana.sidecar.dashboards.enabled=true
 watch kubectl --namespace default get pods --namespace=monitoring 
 ```
 > When you see all components up, CTRL-C out of it.
 > 
-### Apply Prometheus and Grafana configs
+Apply Prometheus and Grafana configs
 ```
 kubectl apply -f nginx-plus-ingress/k8s/monitoring/
 ```
 ## Test
 
-### Get worker node name
+Get worker node name
 ```
 kubectl get pods -n nginx-ingress -o wide
 NAME                             READY   STATUS    RESTARTS   AGE   IP             NODE                              NOMINATED NODE   READINESS GATES
 nginx-ingress-6b447c88b7-brk7r   1/1     Running   0          20m   192.168.57.4   worker-1b96d796.d5540.eadem.com   <none>           <none>
 ```
 
-### Get worker IP Adresss
+Get worker IP Adresss
 
 ```
 qbo get nodes 
@@ -679,7 +671,7 @@ d0a187d31f30 worker-209e83a9.d5540.eadem.com          172.17.0.5         eadem/n
 e147cbf0cda2 master.d5540.eadem.com                   172.17.0.3         eadem/node:v1.18.1        running  
 
 ```
-### Add hosts entries
+Add hosts entries
 
 Add to `/etc/hosts/`
 
@@ -689,19 +681,19 @@ Add to `/etc/hosts/`
 172.17.0.4      alertmanager.example.com
 ```
 
-### Access Prometheus UI
+Access Prometheus UI
 
 Open `http://prometheus.example.com/graph` using your web browser
 
 ![Prometheus UI](prometheus_ui.png)
 
-### Get grafana password
+Get grafana password
 
 ```
 kubectl get secret -n monitoring prometheus-operator-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
 ```
-### Access Grafana UI
+Access Grafana UI
 
 Open `http://grafana.example.com/login` using your web browser
 
@@ -709,7 +701,7 @@ and user `admin` and the password obtained in the previous section
 
 ![Grafana UI](grafana_ui.png)
 
-## Add Nginx Plus Dashboard
+### Nginx Plus Dashboard
 
 
 ![Add a dashboard](add_dashboard.png)
