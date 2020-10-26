@@ -46,7 +46,8 @@
     - [Test](#test-5)
   - [10. Prometheus & Grafana](#10-prometheus--grafana)
     - [Configuration](#configuration-1)
-  - [Test](#test-6)
+    - [Deploy](#deploy-1)
+    - [Test](#test-6)
     - [Nginx Plus Dashboard](#nginx-plus-dashboard)
 
 
@@ -635,7 +636,7 @@ chmod 700 get_helm.sh
 helm repo add stable https://charts.helm.sh/stable --force-update
 helm repo update
 ```
-
+### Deploy
 Create namespace monitoring
 ```
 kubectl create namespace monitoring
@@ -652,7 +653,7 @@ Apply Prometheus and Grafana configs
 ```
 kubectl apply -f nginx-plus-ingress/k8s/monitoring/
 ```
-## Test
+### Test
 
 Get worker node name
 ```
