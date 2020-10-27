@@ -1,0 +1,13 @@
+{
+    // Add the IDs of extensions you want installed when the container is created in the array below.
+    "extensions": [
+        "DumpySquare.vscode-f5-fast",
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        "github.github-vscode-theme",
+        "ms-vsliveshare.vsliveshare",
+        "ms-vsonline.vsonline"
+    ],
+    //A command string or list of command arguments to run after the environment is created. Use && in a string to execute multiple commands. 
+    "postCreateCommand": "/bin/bash ./.devcontainer/scripts/tools.sh >> ~/post-create-tools.log"
+  }
