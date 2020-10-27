@@ -1,3 +1,9 @@
+# qbo
+admin.conf
+qbo.dot
+qbo.log
+
+# nginx+
 draft
 licenses/nginx-repo.crt  
 licenses/nginx-repo.key
