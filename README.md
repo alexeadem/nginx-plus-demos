@@ -1,3 +1,12 @@
+- ![#f03c15](https://via.placeholder.com/15/f03c15/f03c15.png) `Deprecation Notice:`
+
+```diff
+-  As of Sep 25 2022 `qbo-ctl` has been replaced by QBO home. See below for new project link.
+```
+
+>
+>[https://github.com/alexeadem/qbo-home](https://github.com/alexeadem/qbo-home)
+
 - [NGINX PLUS in K8s - Demos](#nginx-plus-in-k8s---demos)
   - [1. Clone repo](#1-clone-repo)
   - [2. Licenses](#2-licenses)
